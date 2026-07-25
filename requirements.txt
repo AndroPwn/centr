@@ -1,0 +1,4 @@
+rns
+flask
+flask-cors
+cryptography

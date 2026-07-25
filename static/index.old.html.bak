@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>centr</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#080908">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --bg:#080908;
+  --surface:#111412;
+  --surface-2:#171b18;
+  --surface-3:#20251f;
+  --stroke:rgba(255,255,255,.1);
+  --stroke-strong:rgba(255,255,255,.18);
+  --text:#f5f4ef;
+  --muted:#9fa8a0;
+  --soft:#6f7a70;
+  --accent:#d8ff6b;
+  --amber:#ffb86c;
+  --danger:#ff6b6b;
+  --ok:#6cffac;
+  --shadow:0 18px 60px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%}
+body{
+  margin:0;
+  background-color:var(--bg);
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:52px 52px;
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overflow:hidden;
+  letter-spacing:0;
+}
+a{color:var(--accent);text-decoration:none}
+button,.btn,input,textarea{font:inherit}
+button,.btn{
+  border:1px solid var(--stroke-strong);
+  background:var(--surface-2);
+  color:var(--text);
+  border-radius:8px;
+  padding:10px 14px;
+  cursor:pointer;
+  transition:background .16s,border-color .16s,color .16s,transform .16s;
+}
+button:hover,.btn:hover{background:var(--surface-3);border-color:rgba(216,255,107,.55)}
+button:disabled{opacity:.45;cursor:default}
+button.primary,.apk-btn{
+  background:var(--text);
+  color:#0d0e0d;
+  border-color:var(--text);
+  font-weight:800;
+}
+button.primary:hover,.apk-btn:hover{background:var(--accent);border-color:var(--accent)}
+button.ghost{background:transparent;color:var(--accent);border-color:rgba(216,255,107,.35)}
+input,textarea{
+  width:100%;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.28);
+  color:var(--text);
+  border-radius:8px;
+  outline:none;
+  padding:12px 13px;
+}
+input:focus,textarea:focus{border-color:rgba(216,255,107,.6);box-shadow:0 0 0 3px rgba(216,255,107,.08)}
+textarea{resize:none}
+.hidden{display:none!important}
+.app-shell{
+  display:grid;
+  grid-template-columns:92px minmax(0,1fr);
+  height:100vh;
+  width:100vw;
+}
+.sidebar{
+  border-right:1px solid var(--stroke);
+  background:rgba(10,12,10,.78);
+  backdrop-filter:blur(18px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  padding:22px 12px;
+}
+.logo{
+  width:52px;
+  height:52px;
+  border-radius:8px;
+  background:var(--text);
+  color:#0d0e0d;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:18px;
+}
+nav.tabs{display:flex;gap:10px}
+.side-tabs{flex-direction:column}
+nav.tabs button{
+  width:60px;
+  min-height:48px;
+  padding:8px 6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  background:transparent;
+  border-color:transparent;
+  font-size:11px;
+  font-weight:800;
+}
+nav.tabs button.active{background:var(--text);color:#0d0e0d;border-color:var(--text)}
+.content{
+  height:100vh;
+  overflow:auto;
+  padding:28px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:22px;
+}
+.eyebrow{
+  color:var(--accent);
+  font-size:12px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+h1,h2,h3,p{margin:0}
+.topbar h1{
+  margin-top:5px;
+  font-size:38px;
+  line-height:1;
+  font-weight:900;
+}
+.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+#status-badge{
+  min-width:134px;
+  text-align:center;
+  border:1px solid var(--stroke);
+  color:var(--muted);
+  background:rgba(255,255,255,.04);
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:12px;
+  font-weight:800;
+}
+#status-badge.online{color:var(--ok);border-color:rgba(108,255,172,.45)}
+#status-badge.offline{color:var(--danger);border-color:rgba(255,107,107,.45)}
+.view{display:none}
+.view.active{display:block}
+.panel{
+  background:rgba(17,20,18,.88);
+  border:1px solid var(--stroke);
+  border-radius:8px;
+  box-shadow:var(--shadow);
+  padding:18px;
+}
+.panel h2{
+  font-size:13px;
+  font-weight:900;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+.chats-grid{
+  display:grid;
+  grid-template-columns:minmax(260px,340px) minmax(0,1fr);
+  gap:18px;
+  min-height:calc(100vh - 120px);
+}
+.conv-list{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 230px);overflow:auto}
+.conv-row{
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.03);
+  border-radius:8px;
+  padding:13px;
+  cursor:pointer;
+}
+.conv-row:hover,.conv-row.active{border-color:rgba(216,255,107,.55);background:rgba(216,255,107,.06)}
+.conv-label{font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-label.group::before{content:"Group ";color:var(--amber)}
+.conv-preview{margin-top:5px;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.new-chat-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-bottom:14px}
+.thread-panel{display:flex;flex-direction:column;min-height:calc(100vh - 120px)}
+.thread-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid var(--stroke);
+  padding-bottom:13px;
+  margin-bottom:12px;
+}
+#thread-title{font-size:18px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#send-status{min-height:18px;color:var(--muted);font-size:12px;text-align:right}
+#send-status.err{color:var(--danger)}
+#thread{
+  flex:1;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:6px 2px 14px;
+}
+.bubble{
+  max-width:min(72%,680px);
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.05);
+  border-radius:8px;
+  padding:12px 13px;
+  line-height:1.45;
+  overflow:hidden;
+}
+.bubble.out{
+  align-self:flex-end;
+  background:rgba(216,255,107,.12);
+  border-color:rgba(216,255,107,.3);
+}
+.bubble.in{align-self:flex-start}
+.bubble img,.bubble video{
+  display:block;
+  max-width:100%;
+  max-height:360px;
+  border-radius:8px;
+  background:#000;
+}
+.media-placeholder{color:var(--muted);font-weight:700}
+.bubble .meta{
+  color:var(--soft);
+  font-size:11px;
+  margin-top:7px;
+}
+.empty{color:var(--muted);font-size:13px}
+.composer{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:end;
+  border-top:1px solid var(--stroke);
+  padding-top:12px;
+}
+.composer textarea{min-height:48px;max-height:120px}
+.icon-btn{min-width:54px;font-weight:900}
+.groups-grid,.settings-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+.field{margin-bottom:13px}
+.field label{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:7px;
+}
+.invite-box{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid rgba(216,255,107,.35);
+  background:rgba(216,255,107,.06);
+  border-radius:8px;
+  word-break:break-all;
+  color:var(--accent);
+  font-size:13px;
+}
+.group-row,.settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--stroke);
+}
+.group-row:last-child,.settings-row:last-child{border-bottom:none}
+.settings-label{font-weight:800}
+.settings-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.badge-pending{
+  color:var(--amber);
+  border:1px solid rgba(255,184,108,.5);
+  border-radius:8px;
+  padding:2px 7px;
+  margin-left:8px;
+  font-size:11px;
+}
+.my-address{
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,.28);
+  border-radius:8px;
+  padding:13px;
+  color:var(--accent);
+  word-break:break-all;
+  cursor:pointer;
+}
+.my-address small{
+  display:block;
+  color:var(--muted);
+  margin-bottom:6px;
+  font-weight:800;
+}
+.map-controls{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+}
+#map{
+  height:calc(100vh - 190px);
+  min-height:420px;
+  border-radius:8px;
+  border:1px solid var(--stroke);
+  overflow:hidden;
+  background:#0c0f0d;
+}
+.toggle-row{display:flex;align-items:center;gap:10px}
+.switch{position:relative;width:48px;height:26px;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;
+  inset:0;
+  cursor:pointer;
+  background:var(--surface-3);
+  border:1px solid var(--stroke);
+  border-radius:999px;
+}
+.slider::before{
+  content:"";
+  position:absolute;
+  width:18px;
+  height:18px;
+  top:3px;
+  left:4px;
+  background:var(--muted);
+  border-radius:50%;
+  transition:transform .16s,background .16s;
+}
+input:checked + .slider{border-color:rgba(216,255,107,.55);background:rgba(216,255,107,.14)}
+input:checked + .slider::before{transform:translateX(20px);background:var(--accent)}
+#radar-wrap{
+  height:calc(100vh - 190px);
+  min-height:420px;
+  display:grid;
+  place-items:center;
+}
+canvas{display:block;max-width:100%;height:auto}
+.passcode-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.download-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#apk-note,#exe-note,#pc-result,#create-group-result,#join-group-result{font-size:12px;margin-top:9px;color:var(--muted)}
+#login-overlay{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(8,9,8,.96);
+}
+#login-overlay.hidden{display:none}
+.login-box{
+  width:100%;
+  max-width:380px;
+  background:var(--surface);
+  border:1px solid var(--stroke);
+  border-radius:8px;
+  box-shadow:var(--shadow);
+  padding:26px;
+}
+.login-box h1{
+  font-size:42px;
+  font-weight:900;
+  margin-bottom:18px;
+}
+.login-box h1 span{color:var(--accent)}
+.login-box input{text-align:center;font-size:18px;letter-spacing:3px}
+.login-box button{width:100%;margin-top:10px}
+#login-error,#setup-error{min-height:18px;color:var(--danger);font-size:12px;margin-top:10px}
+#login-hint,.setup-explainer,.setup-warning{color:var(--muted);font-size:13px;line-height:1.5;margin-top:14px}
+#login-installer-links{margin-top:18px;padding-top:14px;border-top:1px solid var(--stroke);font-size:13px;line-height:1.9}
+.mobile-tabs{display:none}
+@media(max-width:900px){
+  body{overflow:auto}
+  .app-shell{display:block;height:auto;min-height:100vh}
+  .sidebar{display:none}
+  .content{height:auto;min-height:100vh;padding:20px 14px 92px}
+  .topbar{align-items:flex-start;flex-direction:column}
+  .topbar h1{font-size:32px}
+  .chats-grid,.groups-grid,.settings-grid{grid-template-columns:1fr}
+  .thread-panel,.chats-grid{min-height:auto}
+  .conv-list{max-height:260px}
+  #thread{min-height:320px}
+  .bubble{max-width:88%}
+  .composer{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"attach input" "send send"}
+  #attach-btn{grid-area:attach}
+  #msg-input{grid-area:input}
+  #send-btn{grid-area:send}
+  .passcode-row{grid-template-columns:1fr}
+  #map,#radar-wrap{height:420px;min-height:420px}
+  .mobile-tabs{
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:12px;
+    z-index:20;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    padding:8px;
+    border:1px solid var(--stroke);
+    border-radius:8px;
+    background:rgba(17,20,18,.94);
+    backdrop-filter:blur(18px);
+  }
+  .mobile-tabs button{width:auto}
+}
+</style>
+</head>
+<body>
+<div id="login-overlay" class="hidden">
+  <div class="login-box" id="login-mode-box">
+    <h1>Bridge<span>Net</span></h1>
+    <input id="login-passcode" type="password" inputmode="numeric" placeholder="passcode" autocomplete="off" maxlength="32">
+    <button id="login-btn" class="primary">Unlock</button>
+    <div id="login-error"></div>
+    <div id="login-hint">Enter this device's passcode.</div>
+    <div id="login-installer-links">
+      <div style="color:var(--muted);margin-bottom:5px;">Installers</div>
+      <a href="/download/exe">Windows</a> &nbsp; / &nbsp;
+      <a href="/download/apk">Android</a> &nbsp; / &nbsp;
+      <a href="/download/bundle">Source bundle</a>
+    </div>
+  </div>
+  <div class="login-box hidden" id="setup-mode-box">
+    <h1>Bridge<span>Net</span></h1>
+    <input id="setup-passcode" type="password" placeholder="new passcode" autocomplete="off" maxlength="64">
+    <input id="setup-passcode-confirm" type="password" placeholder="confirm passcode" autocomplete="off" maxlength="64" style="margin-top:10px">
+    <button id="setup-btn" class="primary">Set passcode</button>
+    <div id="setup-error"></div>
+    <div class="setup-warning">Keep this passcode somewhere safe.</div>
+    <div class="setup-explainer">It only unlocks this local dashboard.</div>
+  </div>
+</div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="logo">BN</div>
+    <nav class="tabs side-tabs">
+      <button data-tab="chats" class="active">Chats</button>
+      <button data-tab="groups">Groups</button>
+      <button data-tab="map">Map</button>
+      <button data-tab="radar">Radar</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+    <div></div>
+  </aside>
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Reticulum mesh</div>
+        <h1 id="page-heading">centr</h1>
+      </div>
+      <div class="top-actions">
+        <div id="status-badge">connecting</div>
+        <button id="announce-btn" class="ghost">Announce</button>
+      </div>
+    </header>
+    <section class="view active" id="view-chats">
+      <div class="chats-grid">
+        <div class="panel">
+          <h2>Conversations</h2>
+          <div class="new-chat-row">
+            <input id="new-chat-input" placeholder="peer hex address" spellcheck="false">
+            <button class="ghost" id="new-chat-btn">Open</button>
+          </div>
+          <div class="conv-list" id="conv-list"><div class="empty">No conversations yet.</div></div>
+        </div>
+        <div class="panel thread-panel">
+          <div class="thread-head">
+            <div id="thread-title">Select a conversation</div>
+            <div id="send-status"></div>
+          </div>
+          <div id="thread"><div class="empty">Nothing here yet.</div></div>
+          <div class="composer">
+            <button class="icon-btn ghost" id="attach-btn" title="Attach photo">Photo</button>
+            <textarea id="msg-input" placeholder="Type a message"></textarea>
+            <button class="primary" id="send-btn">Send</button>
+          </div>
+          <input type="file" id="image-input" accept="image/*" style="display:none">
+        </div>
+      </div>
+    </section>
+    <section class="view" id="view-groups">
+      <div class="groups-grid">
+        <div class="panel">
+          <h2>Create Group</h2>
+          <div class="field">
+            <label>Group name</label>
+            <input id="group-name-input" placeholder="Block 4">
+          </div>
+          <button id="create-group-btn" class="primary">Create</button>
+          <div id="create-group-result"></div>
+          <div class="field" style="margin-top:24px">
+            <label>Invite code</label>
+            <input id="join-invite-input" placeholder="paste invite code">
+          </div>
+          <button class="ghost" id="join-group-btn">Join</button>
+          <div id="join-group-result"></div>
+        </div>
+        <div class="panel">
+          <h2>Your Groups</h2>
+          <div id="groups-list"><div class="empty">No groups yet.</div></div>
+        </div>
+      </div>
+    </section>
+    <section class="view" id="view-map">
+      <div class="panel">
+        <div class="map-controls">
+          <h2 style="margin:0">Live Positions</h2>
+          <div class="toggle-row">
+            <span class="settings-label">Share location</span>
+            <label class="switch">
+              <input type="checkbox" id="share-location-toggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+    </section>
+    <section class="view" id="view-radar">
+      <div class="panel">
+        <h2>Local Topology</h2>
+        <div id="radar-wrap"><canvas id="radar" width="640" height="440"></canvas></div>
+      </div>
+    </section>
+    <section class="view" id="view-settings">
+      <div class="settings-grid">
+        <div class="panel">
+          <h2>Your Node</h2>
+          <div class="my-address" id="my-address" title="Click to copy">
+            <small>Destination hash</small>
+            <span id="my-address-text">resolving</span>
+          </div>
+          <div class="download-row">
+            <button class="apk-btn" id="apk-btn">Android</button>
+            <button class="apk-btn" id="exe-btn">Windows</button>
+          </div>
+          <div id="apk-note"></div>
+          <div id="exe-note"></div>
+        </div>
+        <div class="panel">
+          <h2>Relay</h2>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Relay traffic<span id="restart-badge"></span></div>
+              <div class="settings-sub">Takes effect after restart.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="relay-toggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Dashboard Lock</h2>
+          <div class="passcode-row">
+            <input id="pc-current" type="password" placeholder="current passcode" autocomplete="off">
+            <input id="pc-new" type="password" placeholder="new passcode" autocomplete="off">
+          </div>
+          <div class="download-row">
+            <button id="pc-change-btn" class="primary">Change</button>
+            <button class="ghost" id="logout-btn">Log Out</button>
+          </div>
+          <div id="pc-result"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<nav class="tabs mobile-tabs">
+  <button data-tab="chats" class="active">Chats</button>
+  <button data-tab="groups">Groups</button>
+  <button data-tab="map">Map</button>
+  <button data-tab="radar">Radar</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const API = "";
+const loginOverlay = document.getElementById('login-overlay');
+const loginModeBox = document.getElementById('login-mode-box');
+const setupModeBox = document.getElementById('setup-mode-box');
+let appStarted = false;
+
+function showLogin(needsSetup){
+  loginOverlay.classList.remove('hidden');
+  if(needsSetup){
+    loginModeBox.classList.add('hidden');
+    setupModeBox.classList.remove('hidden');
+  } else {
+    setupModeBox.classList.add('hidden');
+    loginModeBox.classList.remove('hidden');
+  }
+}
+
+function hideLogin(){
+  loginOverlay.classList.add('hidden');
+}
+
+const _origFetch = window.fetch.bind(window);
+window.fetch = async function(input, init){
+  const res = await _origFetch(input, init);
+  if(res.status === 401){
+    try{
+      const body = await res.clone().json();
+      if(body && body.ok === false){ showLogin(); }
+    }catch(e){}
+  }
+  return res;
+};
+
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('login-passcode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') doLogin();
+});
+
+async function doLogin(){
+  const passcode = document.getElementById('login-passcode').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try{
+    const r = await _origFetch(API + '/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({passcode})
+    });
+    const data = await r.json();
+    if(data.ok){
+      document.getElementById('login-passcode').value = '';
+      hideLogin();
+      startApp();
+    } else {
+      errEl.textContent = data.error || 'Login failed';
+    }
+  }catch(e){
+    errEl.textContent = 'Bridge unreachable';
+  }
+}
+
+document.getElementById('setup-btn').addEventListener('click', doSetup);
+document.getElementById('setup-passcode-confirm').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') doSetup();
+});
+
+async function doSetup(){
+  const passcode = document.getElementById('setup-passcode').value;
+  const confirm = document.getElementById('setup-passcode-confirm').value;
+  const errEl = document.getElementById('setup-error');
+  errEl.textContent = '';
+  if(passcode.length < 4){
+    errEl.textContent = 'Passcode must be at least 4 characters';
+    return;
+  }
+  if(passcode !== confirm){
+    errEl.textContent = "Passcodes don't match";
+    return;
+  }
+  try{
+    const r = await _origFetch(API + '/api/auth/setup', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({passcode})
+    });
+    const data = await r.json();
+    if(data.ok){
+      document.getElementById('setup-passcode').value = '';
+      document.getElementById('setup-passcode-confirm').value = '';
+      hideLogin();
+      startApp();
+    } else {
+      errEl.textContent = data.error || 'Setup failed';
+    }
+  }catch(e){
+    errEl.textContent = 'Bridge unreachable';
+  }
+}
+
+document.getElementById('logout-btn').addEventListener('click', async ()=>{
+  await fetch(API + '/api/auth/logout', {method:'POST'});
+  document.getElementById('pc-result').textContent = '';
+  showLogin();
+});
+
+document.getElementById('pc-change-btn').addEventListener('click', async ()=>{
+  const current = document.getElementById('pc-current').value;
+  const next = document.getElementById('pc-new').value;
+  const resultEl = document.getElementById('pc-result');
+  resultEl.style.color = 'var(--muted)';
+  resultEl.textContent = 'Updating';
+  try{
+    const r = await fetch(API + '/api/auth/change-passcode', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({current, new:next})
+    });
+    const data = await r.json();
+    if(data.ok){
+      resultEl.style.color = 'var(--ok)';
+      resultEl.textContent = 'Passcode updated.';
+      document.getElementById('pc-current').value = '';
+      document.getElementById('pc-new').value = '';
+    } else {
+      resultEl.style.color = 'var(--danger)';
+      resultEl.textContent = data.error || 'Failed to update passcode';
+    }
+  }catch(e){
+    resultEl.style.color = 'var(--danger)';
+    resultEl.textContent = 'Bridge unreachable';
+  }
+});
+
+async function checkAuthAndBoot(){
+  try{
+    const r = await _origFetch(API + '/api/auth/status');
+    const data = await r.json();
+    if(data.authed){
+      hideLogin();
+      startApp();
+    } else {
+      showLogin(data.needs_setup);
+    }
+  }catch(e){
+    showLogin(false);
+  }
+}
+
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    document.getElementById('page-heading').textContent = btn.textContent.trim();
+    if(tab === 'map'){
+      initMapIfNeeded();
+      setTimeout(()=>map && map.invalidateSize(), 50);
+    }
+  });
+});
+
+let myHash = null;
+
+async function fetchStatus(){
+  try{
+    const r = await fetch(API + '/api/status');
+    if(!r.ok) throw new Error();
+    const data = await r.json();
+    myHash = data.address;
+    document.getElementById('my-address-text').textContent = myHash;
+    const el = document.getElementById('status-badge');
+    el.textContent = 'node online';
+    el.className = 'online';
+  }catch(e){
+    const el = document.getElementById('status-badge');
+    el.textContent = 'bridge offline';
+    el.className = 'offline';
+  }
+}
+
+document.getElementById('my-address').addEventListener('click', ()=>{
+  if(myHash) navigator.clipboard?.writeText(myHash);
+});
+
+document.getElementById('announce-btn').addEventListener('click', async ()=>{
+  try{ await fetch(API + '/api/announce', {method:'POST'}); }catch(e){}
+});
+
+async function fetchSettings(){
+  try{
+    const r = await fetch(API + '/api/settings');
+    const data = await r.json();
+    document.getElementById('relay-toggle').checked = data.relay_enabled_pending;
+    document.getElementById('restart-badge').textContent = data.restart_required ? ' restart needed' : '';
+    document.getElementById('restart-badge').className = data.restart_required ? 'badge-pending' : '';
+  }catch(e){}
+}
+
+document.getElementById('relay-toggle').addEventListener('change', async e=>{
+  try{
+    await fetch(API + '/api/settings/relay', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({enabled:e.target.checked})
+    });
+    fetchSettings();
+  }catch(err){}
+});
+
+document.getElementById('apk-btn').addEventListener('click', async ()=>{
+  const note = document.getElementById('apk-note');
+  note.textContent = 'Checking';
+  try{
+    const r = await fetch(API + '/download/apk');
+    if(!r.ok){
+      const data = await r.json().catch(()=>({}));
+      note.textContent = data.error || 'Not available.';
+      return;
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'centr.apk';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    note.textContent = '';
+  }catch(e){
+    note.textContent = 'Bridge unreachable.';
+  }
+});
+
+document.getElementById('exe-btn').addEventListener('click', async ()=>{
+  const note = document.getElementById('exe-note');
+  note.textContent = 'Checking';
+  try{
+    const r = await fetch(API + '/download/exe');
+    if(!r.ok){
+      const data = await r.json().catch(()=>({}));
+      note.textContent = data.error || 'Not available.';
+      return;
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'centr_windows.exe';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    note.textContent = '';
+  }catch(e){
+    note.textContent = 'Bridge unreachable.';
+  }
+});
+
+let currentConversation = null;
+
+async function fetchConversations(){
+  try{
+    const r = await fetch(API + '/api/conversations');
+    const list = await r.json();
+    const el = document.getElementById('conv-list');
+    if(list.length === 0){
+      el.innerHTML = '<div class="empty">No conversations yet.</div>';
+      return;
+    }
+    el.innerHTML = list.map(c=>`
+      <div class="conv-row ${currentConversation && currentConversation.id === c.id ? 'active' : ''}" data-kind="${c.kind}" data-id="${c.id}" data-label="${escapeHtml(c.label)}">
+        <div class="conv-label ${c.kind === 'group' ? 'group' : ''}">${escapeHtml(c.label)}</div>
+        <div class="conv-preview">${escapeHtml(c.preview || '')}</div>
+      </div>
+    `).join('');
+    el.querySelectorAll('.conv-row').forEach(row=>{
+      row.addEventListener('click', ()=>openConversation(row.dataset.kind, row.dataset.id, row.dataset.label));
+    });
+  }catch(e){}
+}
+
+function openConversation(kind, id, label){
+  currentConversation = {kind, id, label};
+  document.getElementById('thread-title').textContent = (kind === 'group' ? 'Group ' : '') + label;
+  fetchConversations();
+  fetchThread();
+}
+
+document.getElementById('new-chat-btn').addEventListener('click', ()=>{
+  const hex = document.getElementById('new-chat-input').value.trim();
+  if(!hex) return;
+  openConversation('peer', hex, hex.slice(0, 10));
+  document.getElementById('new-chat-input').value = '';
+});
+
+async function fetchThread(){
+  if(!currentConversation) return;
+  const param = currentConversation.kind === 'group'
+    ? `group=${encodeURIComponent(currentConversation.id)}`
+    : `peer=${encodeURIComponent(currentConversation.id)}`;
+  try{
+    const r = await fetch(API + '/api/messages?' + param);
+    const msgs = await r.json();
+    const el = document.getElementById('thread');
+    if(msgs.length === 0){
+      el.innerHTML = '<div class="empty">No messages yet.</div>';
+      return;
+    }
+    el.innerHTML = msgs.map(renderBubble).join('');
+    el.scrollTop = el.scrollHeight;
+  }catch(e){}
+}
+
+function renderBubble(m){
+  const cls = m.direction === 'out' ? 'out' : 'in';
+  const time = new Date(m.ts * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  let body;
+  if(m.type === 'image'){
+    body = m.body ? `<img src="${escapeHtml(m.body)}" alt="shared photo">` : '<span class="media-placeholder">Photo pending</span>';
+  } else if(m.type === 'video'){
+    body = m.body ? `<video controls preload="metadata" src="${escapeHtml(m.body)}"></video>` : '<span class="media-placeholder">Video pending</span>';
+  } else if(m.type === 'location'){
+    body = 'Location shared. Open Map.';
+  } else {
+    body = escapeHtml(m.body || '');
+  }
+  return `<div class="bubble ${cls}">${body}<div class="meta">${time}${m.status ? ' / ' + escapeHtml(m.status) : ''}</div></div>`;
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : s;
+  return d.innerHTML;
+}
+
+document.getElementById('send-btn').addEventListener('click', sendCurrentMessage);
+document.getElementById('msg-input').addEventListener('keydown', e=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendCurrentMessage();
+  }
+});
+
+async function sendCurrentMessage(){
+  const statusEl = document.getElementById('send-status');
+  statusEl.className = '';
+  statusEl.textContent = '';
+  if(!currentConversation){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Open a conversation first.';
+    return;
+  }
+  const text = document.getElementById('msg-input').value.trim();
+  if(!text) return;
+  const url = currentConversation.kind === 'group'
+    ? `/api/groups/${encodeURIComponent(currentConversation.id)}/send`
+    : '/api/send';
+  const body = currentConversation.kind === 'group'
+    ? {message:text}
+    : {destination:currentConversation.id, message:text};
+  try{
+    const r = await fetch(API + url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    const data = await r.json();
+    if(data.ok){
+      document.getElementById('msg-input').value = '';
+      fetchThread();
+      fetchConversations();
+      if(data.queued) statusEl.textContent = data.note || 'Queued for retry.';
+    } else {
+      statusEl.className = 'err';
+      statusEl.textContent = data.error || 'Send failed.';
+    }
+  }catch(e){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Bridge unreachable.';
+  }
+}
+
+document.getElementById('attach-btn').addEventListener('click', ()=>document.getElementById('image-input').click());
+document.getElementById('image-input').addEventListener('change', async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('send-status');
+  statusEl.className = '';
+  statusEl.textContent = '';
+  if(!currentConversation || currentConversation.kind !== 'peer'){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Photos send in direct chats.';
+    e.target.value = '';
+    return;
+  }
+  try{
+    const blob = await compressImage(file);
+    const form = new FormData();
+    form.append('destination', currentConversation.id);
+    form.append('media', blob, 'photo.jpg');
+    statusEl.textContent = 'Sending photo';
+    const r = await fetch(API + '/api/send-image', {method:'POST', body:form});
+    const data = await r.json();
+    statusEl.textContent = data.ok ? '' : data.error || 'Image send failed.';
+    if(data.ok){
+      fetchThread();
+      fetchConversations();
+    }
+  }catch(err){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Could not send image.';
+  }
+  e.target.value = '';
+});
+
+function compressImage(file, maxDim=800, quality=0.7){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = ev=>{ img.src = ev.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let {width, height} = img;
+      if(width > height && width > maxDim){
+        height *= maxDim / width;
+        width = maxDim;
+      } else if(height > maxDim){
+        width *= maxDim / height;
+        height = maxDim;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob=>blob ? resolve(blob) : reject(new Error('compress failed')), 'image/jpeg', quality);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fetchGroups(){
+  try{
+    const r = await fetch(API + '/api/groups');
+    const groups = await r.json();
+    const el = document.getElementById('groups-list');
+    if(groups.length === 0){
+      el.innerHTML = '<div class="empty">No groups yet.</div>';
+      return;
+    }
+    el.innerHTML = groups.map(g=>`
+      <div class="group-row">
+        <span>${escapeHtml(g.name)}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="ghost copy-invite-btn" data-id="${g.group_id}">Copy</button>
+          <button class="open-group-btn" data-id="${g.group_id}" data-name="${escapeHtml(g.name)}">Open</button>
+        </div>
+      </div>
+    `).join('');
+    el.querySelectorAll('.copy-invite-btn').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        const r = await fetch(API + `/api/groups/${b.dataset.id}/invite`);
+        const data = await r.json();
+        if(data.ok){
+          navigator.clipboard?.writeText(data.invite);
+          b.textContent = 'Copied';
+          setTimeout(()=>b.textContent = 'Copy', 1500);
+        }
+      });
+    });
+    el.querySelectorAll('.open-group-btn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        document.querySelector('nav.tabs button[data-tab="chats"]').click();
+        openConversation('group', b.dataset.id, b.dataset.name);
+      });
+    });
+  }catch(e){}
+}
+
+document.getElementById('create-group-btn').addEventListener('click', async ()=>{
+  const name = document.getElementById('group-name-input').value.trim() || 'Unnamed Group';
+  const resEl = document.getElementById('create-group-result');
+  try{
+    const r = await fetch(API + '/api/groups', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name})
+    });
+    const data = await r.json();
+    if(data.ok){
+      resEl.innerHTML = `<div class="invite-box">${escapeHtml(data.invite)}</div>`;
+      document.getElementById('group-name-input').value = '';
+      fetchGroups();
+      fetchConversations();
+    } else {
+      resEl.innerHTML = `<div style="color:var(--danger)">${escapeHtml(data.error || 'Could not create group.')}</div>`;
+    }
+  }catch(e){
+    resEl.innerHTML = '<div style="color:var(--danger)">Bridge unreachable.</div>';
+  }
+});
+
+document.getElementById('join-group-btn').addEventListener('click', async ()=>{
+  const invite = document.getElementById('join-invite-input').value.trim();
+  const resEl = document.getElementById('join-group-result');
+  if(!invite) return;
+  try{
+    const r = await fetch(API + '/api/groups/join', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({invite})
+    });
+    const data = await r.json();
+    if(data.ok){
+      resEl.innerHTML = `<div style="color:var(--ok)">Joined "${escapeHtml(data.name)}".</div>`;
+      document.getElementById('join-invite-input').value = '';
+      fetchGroups();
+      fetchConversations();
+    } else {
+      resEl.innerHTML = `<div style="color:var(--danger)">${escapeHtml(data.error || 'Could not join group.')}</div>`;
+    }
+  }catch(e){
+    resEl.innerHTML = '<div style="color:var(--danger)">Bridge unreachable.</div>';
+  }
+});
+
+let map = null;
+let selfMarker = null;
+const peerMarkers = {};
+
+function initMapIfNeeded(){
+  if(map) return;
+  map = L.map('map', {zoomControl:true}).setView([20.5937, 78.9629], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap contributors',
+    maxZoom:19
+  }).addTo(map);
+}
+
+async function fetchLocations(){
+  try{
+    const r = await fetch(API + '/api/locations');
+    const rows = await r.json();
+    rows.forEach(loc=>{
+      if(loc.lat == null || loc.lon == null) return;
+      if(!map) return;
+      if(!peerMarkers[loc.peer_hash]){
+        peerMarkers[loc.peer_hash] = L.marker([loc.lat, loc.lon]).addTo(map);
+      } else {
+        peerMarkers[loc.peer_hash].setLatLng([loc.lat, loc.lon]);
+      }
+      peerMarkers[loc.peer_hash].bindPopup(`${loc.peer_hash.slice(0, 10)}<br>+/-${Math.round(loc.accuracy_m || 0)}m`);
+    });
+  }catch(e){}
+}
+
+let geoWatchId = null;
+document.getElementById('share-location-toggle').addEventListener('change', e=>{
+  if(e.target.checked){
+    if(!navigator.geolocation){
+      alert('Geolocation is not supported in this browser.');
+      e.target.checked = false;
+      return;
+    }
+    geoWatchId = navigator.geolocation.watchPosition(onPosition, ()=>{}, {enableHighAccuracy:true, maximumAge:10000});
+  } else if(geoWatchId !== null){
+    navigator.geolocation.clearWatch(geoWatchId);
+    geoWatchId = null;
+  }
+});
+
+let lastSharedAt = 0;
+function onPosition(pos){
+  initMapIfNeeded();
+  const {latitude, longitude, accuracy} = pos.coords;
+  if(!selfMarker){
+    selfMarker = L.marker([latitude, longitude], {title:'You'}).addTo(map).bindPopup('You');
+    map.setView([latitude, longitude], 14);
+  } else {
+    selfMarker.setLatLng([latitude, longitude]);
+  }
+  const now = Date.now();
+  if(now - lastSharedAt < 15000) return;
+  lastSharedAt = now;
+  const target = currentConversation
+    ? currentConversation.kind === 'group' ? {group:currentConversation.id} : {peer:currentConversation.id}
+    : null;
+  if(!target) return;
+  fetch(API + '/api/location', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({lat:latitude, lon:longitude, accuracy, share_with:target})
+  }).catch(()=>{});
+}
+
+let radarPeers = {};
+const canvas = document.getElementById('radar');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+const CX = W / 2;
+const CY = H / 2;
+const MAXR = Math.min(W, H) / 2 - 20;
+let sweepAngle = 0;
+
+function hashToAngle(hash){
+  let s = 0;
+  for(let i = 0; i < hash.length; i++) s = (s * 31 + hash.charCodeAt(i)) % 360;
+  return s / 360 * Math.PI * 2;
+}
+
+function hashToDist(hash){
+  let s = 0;
+  for(let i = 0; i < hash.length; i++) s = (s * 17 + hash.charCodeAt(i)) % 1000;
+  return 0.35 + s / 1000 * 0.55;
+}
+
+function drawRadar(){
+  ctx.clearRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(216,255,107,.18)';
+  ctx.lineWidth = 1;
+  for(let r = 1; r <= 4; r++){
+    ctx.beginPath();
+    ctx.arc(CX, CY, MAXR * (r / 4), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(CX - MAXR, CY);
+  ctx.lineTo(CX + MAXR, CY);
+  ctx.moveTo(CX, CY - MAXR);
+  ctx.lineTo(CX, CY + MAXR);
+  ctx.stroke();
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(CX, CY);
+  ctx.arc(CX, CY, MAXR, sweepAngle - 0.5, sweepAngle);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(216,255,107,.1)';
+  ctx.fill();
+  ctx.restore();
+  ctx.beginPath();
+  ctx.moveTo(CX, CY);
+  ctx.lineTo(CX + Math.cos(sweepAngle) * MAXR, CY + Math.sin(sweepAngle) * MAXR);
+  ctx.strokeStyle = 'rgba(216,255,107,.65)';
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(CX, CY, 7, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffb86c';
+  ctx.fill();
+  ctx.font = '10px Inter, sans-serif';
+  ctx.fillStyle = '#ffb86c';
+  ctx.fillText('YOU', CX + 10, CY - 10);
+  const now = Date.now() / 1000;
+  Object.values(radarPeers).forEach(p=>{
+    const x = CX + Math.cos(p.angle) * MAXR * p.dist;
+    const y = CY + Math.sin(p.angle) * MAXR * p.dist;
+    const fresh = now - p.last_seen < 60;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = fresh ? '#d8ff6b' : 'rgba(159,168,160,.6)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(216,255,107,.2)';
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.font = '10px Inter, sans-serif';
+    ctx.fillStyle = fresh ? '#d8ff6b' : '#9fa8a0';
+    ctx.fillText(p.nickname || p.hash.slice(0, 8), x + 8, y + 3);
+  });
+  sweepAngle += 0.01;
+  requestAnimationFrame(drawRadar);
+}
+
+requestAnimationFrame(drawRadar);
+
+async function fetchPeers(){
+  try{
+    const r = await fetch(API + '/api/peers');
+    const list = await r.json();
+    list.forEach(p=>{
+      if(!radarPeers[p.hash]){
+        radarPeers[p.hash] = {hash:p.hash, nickname:p.nickname, angle:hashToAngle(p.hash), dist:hashToDist(p.hash), last_seen:p.last_seen};
+      } else {
+        radarPeers[p.hash].last_seen = p.last_seen;
+        radarPeers[p.hash].nickname = p.nickname;
+      }
+    });
+  }catch(e){}
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+function startApp(){
+  if(appStarted) return;
+  appStarted = true;
+  fetchStatus();
+  fetchSettings();
+  fetchConversations();
+  fetchGroups();
+  fetchPeers();
+  setInterval(fetchStatus, 5000);
+  setInterval(fetchConversations, 4000);
+  setInterval(fetchThread, 3000);
+  setInterval(fetchGroups, 8000);
+  setInterval(fetchPeers, 4000);
+  setInterval(fetchLocations, 6000);
+}
+
+checkAuthAndBoot();
+</script>
+</body>
+</html>

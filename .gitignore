@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Zip files / Build artifacts
+centr.zip
+
+# Ignore all Markdown files...
+*.md
+# ...except README.md
+!README.md
