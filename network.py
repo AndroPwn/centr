@@ -94,6 +94,15 @@ def write_reticulum_config(configdir, enable_transport, listen_port, connect_to)
         "  loglevel = 3",
         "",
         "[interfaces]",
+        # Zero-config discovery: devices on the same Wi-Fi/hotspot find each
+        # other automatically over UDP multicast, no IP/port entry needed.
+        # This is what makes "just run the exe" actually work for two
+        # people on the same hotspot with no setup step.
+        "  [[centr Auto Discovery]]",
+        "    type = AutoInterface",
+        "    enabled = Yes",
+        "    group_id = centr-mesh",
+        "",
         "  [[centr Listen]]",
         "    type = TCPServerInterface",
         "    enabled = Yes",
